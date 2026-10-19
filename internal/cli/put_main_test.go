@@ -5,7 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/wakonig/cago"
+	"github.com/wakonig/cago/pkg/cago"
 	"io"
 	"reflect"
 	"strings"

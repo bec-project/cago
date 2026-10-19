@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"github.com/wakonig/cago"
+	"github.com/wakonig/cago/pkg/cago"
 	"io"
 	"net"
 	"strconv"

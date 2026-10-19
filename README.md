@@ -6,13 +6,13 @@ installation, cgo, or external repeater is required at runtime.
 
 Requires Go 1.27 or newer. No experimental build flags are required.
 
-The Go module and public `cago` library live at the repository root. The layout
-follows the applicable patterns from
+The Go module lives at the repository root, with the reusable `cago` library
+under `pkg/cago`. The layout follows
 [Go Project Layout](https://github.com/golang-standards/project-layout):
 
 ```text
 go.mod, go.sum       Module definition and dependencies
-*.go                Public library and its unit tests
+pkg/cago/           Public library and its unit tests
 cmd/cago/           CLI entry point
 internal/cli/       Command implementations
 internal/wire/      Private protocol framing
@@ -22,7 +22,7 @@ bin/                Generated executables and local artifacts (ignored)
 ```
 
 Run source-tree commands from the repository root. Import the library as
-`github.com/wakonig/cago`.
+`github.com/wakonig/cago/pkg/cago`.
 
 On arm64, `GOEXPERIMENT=simd` enables an optional experimental NEON path for
 FLOAT/DOUBLE array encoding and decoding. Standard builds and other architectures
@@ -32,7 +32,7 @@ unaligned data and handles partial vectors with scalar tails. It remains cgo-fre
 for diagnosis and controlled comparisons.
 
 ```go
-import "github.com/wakonig/cago"
+import "github.com/wakonig/cago/pkg/cago"
 
 client, err := cago.New(ctx, cago.Options{})
 if err != nil { return err }

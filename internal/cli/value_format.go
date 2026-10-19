@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wakonig/cago"
+	"github.com/wakonig/cago/pkg/cago"
 )
 
 // The EPICS command tools share these conventions in tool_lib.c. Keep CLI

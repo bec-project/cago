@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/wakonig/cago"
+	"github.com/wakonig/cago/pkg/cago"
 )
 
 func TestEPICSValueFormatting(t *testing.T) {

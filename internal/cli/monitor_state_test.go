@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/wakonig/cago"
+	"github.com/wakonig/cago/pkg/cago"
 )
 
 type twoRecordWriter struct{ records []string }

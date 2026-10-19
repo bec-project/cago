@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	"github.com/wakonig/cago"
+	"github.com/wakonig/cago/pkg/cago"
 )
 
 type putConfig struct {
