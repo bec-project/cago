@@ -121,7 +121,21 @@ func TestGetCompactScalarString(t *testing.T) {
 	t.Setenv("EPICS_CA_AUTO_ADDR_LIST", "NO")
 	var out, stderr bytes.Buffer
 	cmd := NewRootCommand(&out, &stderr)
-	if code := Execute(cmd, []string{"get", "--timeout", "1s", pv}); code != 0 || out.String() != formatPVName(pv, 1)+message+"\n" || stderr.Len() != 0 {
+	if code := Execute(cmd, []string{"get", "--timeout", "1s", pv}); code != 0 || out.String() != formatPVName(pv, 1)+`"`+message+`"`+"\n" || stderr.Len() != 0 {
 		t.Fatalf("exit=%d stdout=%q stderr=%q", code, out.String(), stderr.String())
+	}
+}
+
+func TestGetTimestampFlag(t *testing.T) {
+	for _, flag := range []string{"--timestamp", "-T"} {
+		t.Run(flag, func(t *testing.T) {
+			t.Setenv("EPICS_CA_ADDR_LIST", commandIOC(t))
+			t.Setenv("EPICS_CA_AUTO_ADDR_LIST", "NO")
+			var out, stderr bytes.Buffer
+			cmd := NewRootCommand(&out, &stderr)
+			if code := Execute(cmd, []string{"get", flag, "HEALTHY"}); code != 0 || out.String() != formatPVName("HEALTHY", 1)+"<undefined>                 5\n" || stderr.Len() != 0 {
+				t.Fatalf("%s exit=%d out=%q err=%q", flag, code, out.String(), stderr.String())
+			}
+		})
 	}
 }

@@ -31,17 +31,18 @@ func TestEPICSValueFormatting(t *testing.T) {
 		{math.Inf(-1), false, false, "-inf"},
 		{math.NaN(), false, false, "nan"},
 		{math.Copysign(math.NaN(), -1), false, false, "-nan"},
-		{"User Operation 400mA top-up", false, false, "User Operation 400mA top-up"},
-		{"\a\b\f\n\r\t\v\\'\"\x01\x7f\xff", false, false, `\a\b\f\n\r\t\v\\\'\"\x01\x7f\xff`},
+		{"User Operation 400mA top-up", false, false, `"User Operation 400mA top-up"`},
+		{"\a\b\f\n\r\t\v\\'\"\x01\x7f\xff", false, false, `"\a\b\f\n\r\t\v\\\'\"\x01\x7f\xff"`},
 		{[]byte{0, 127, 128, 255}, true, false, "4 0 127 -128 -1"},
 		{[]float64{1.23456789, -2.5}, true, false, "2 1.23457 -2.5"},
-		{[]string{"hello world", "", "line\n"}, true, false, `3 hello world  line\n`},
+		{[]string{"hello world", "", "line\n"}, true, false, `3 "hello world" "" "line\n"`},
 		{[]float64{1}, true, false, "1 1"},
 		{[]float64{}, false, false, ""},
 		{[]float64{}, true, false, "0 "},
-		{[]byte{'a', '\n', 0, 'b'}, true, true, `a\n`},
+		{[]byte{'a', '\n', 0, 'b'}, true, true, `"a\n"`},
 		{[]byte{'a'}, false, true, "97"},
-		{"abc", false, true, "abc"},
+		{"abc", false, true, `"abc"`},
+		{"", false, false, `""`},
 	} {
 		t.Run(fmt.Sprintf("%T/%q", tt.input, tt.want), func(t *testing.T) {
 			v, err := cago.NewValue(tt.input)
@@ -62,7 +63,7 @@ func TestEPICSSynchronousWaveformBuffer(t *testing.T) {
 		want  string
 	}{
 		{[]float64{1.25, 2.5}, 4, "4 1.25 2.5 0 0"},
-		{[]string{"hello world", "line\n"}, 4, `4 hello world line\n  `},
+		{[]string{"hello world", "line\n"}, 4, `4 "hello world" "line\n" "" ""`},
 		{[]int32{}, 2, "2 0 0"},
 		{[]int16{1, 2, 3}, 1, "1 1"},
 	} {
@@ -116,13 +117,13 @@ func TestEPICSTimestampsAndAlarms(t *testing.T) {
 		{0, 0, "  \n"}, {3, 2, " HIHI MAJOR\n"}, {0, 1, " NO_ALARM MINOR\n"}, {65535, 65535, " ?? ??\n"},
 	} {
 		v := infoTimeValue(t, 1.23456789, tt.status, tt.severity)
-		want := "PV                             " + formatTimestamp(v.Metadata()) + " 1.23457" + tt.suffix
-		if got := formatMonitorValue("PV", v, outputOptions{}); got != want {
+		want := "PV                             " + formatTimestamp(v.Metadata()) + "  1.23457" + tt.suffix
+		if got := formatMonitorValue("PV", v, outputOptions{timestamp: true}); got != want {
 			t.Fatalf("got %q, want %q", got, want)
 		}
 	}
 	v := infoTimeValue(t, []byte{'a', '\t', 0}, 0, 0)
-	if got := formatMonitorValue("WAVE", v, outputOptions{longString: true}); !strings.HasPrefix(got, "WAVE ") || !strings.HasSuffix(got, ` a\t`+"  \n") {
+	if got := formatMonitorValue("WAVE", v, outputOptions{longString: true}); !strings.HasPrefix(got, "WAVE ") || !strings.HasSuffix(got, `"a\t"`+"  \n") {
 		t.Fatal(got)
 	}
 }
@@ -143,5 +144,22 @@ func TestEPICSReadDiagnostics(t *testing.T) {
 		if got := formatReadError(tt.err, tt.connected); got != tt.want {
 			t.Fatalf("got %q, want %q", got, tt.want)
 		}
+	}
+}
+
+func TestOptionalMonitorTimestamps(t *testing.T) {
+	v := infoTimeValue(t, "User Operation 400mA top-up", 0, 0)
+	for _, enabled := range []bool{false, true} {
+		prefix := formatPVName("PV", 1)
+		if enabled {
+			prefix += formatTimestamp(v.Metadata()) + "  "
+		}
+		want := prefix + `"User Operation 400mA top-up"` + "  \n"
+		if got := formatMonitorValue("PV", v, outputOptions{timestamp: enabled}); got != want {
+			t.Fatalf("timestamp=%v: %q != %q", enabled, got, want)
+		}
+	}
+	if got := formatOutputTimestamp(cago.Metadata{Level: cago.Time}, outputOptions{timestamp: true}); got != "<undefined>                 " {
+		t.Fatalf("undefined timestamp column: %q", got)
 	}
 }

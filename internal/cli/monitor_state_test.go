@@ -35,7 +35,16 @@ func TestDisconnectPrecedesReconnectedValue(t *testing.T) {
 		events <- cago.Event{PV: "PV", Value: old, ReceivedAt: at.Add(-time.Millisecond)}
 		events <- cago.Event{PV: "PV", Value: v, ReceivedAt: at.Add(3 * time.Millisecond)}
 		out := &twoRecordWriter{}
-		monitorValueEvents(context.Background(), "PV", events, nil, outputOptions{}, monitorConnection{changes: changes, count: 1}, out, &bytes.Buffer{})
+		options := outputOptions{timestamp: i%2 == 0}
+		monitorValueEvents(context.Background(), "PV", events, nil, options, monitorConnection{changes: changes, count: 1}, out, &bytes.Buffer{})
+		wantLoss := formatPVName("PV", 1)
+		if options.timestamp {
+			wantLoss += formatTimestamp(cago.Metadata{Timestamp: at}) + "  "
+		}
+		wantLoss += "*** disconnected\n"
+		if len(out.records) > 0 && out.records[0] != wantLoss {
+			t.Fatalf("disconnect timestamp=%v: %q != %q", options.timestamp, out.records[0], wantLoss)
+		}
 		if len(out.records) != 2 || !strings.HasSuffix(out.records[0], " *** disconnected\n") || !strings.HasSuffix(out.records[1], " 1.25  \n") {
 			t.Fatalf("disconnect/value order: %q", out.records)
 		}

@@ -12,10 +12,10 @@ import (
 	"github.com/wakonig/cago/pkg/cago"
 )
 
-// The EPICS command tools share these conventions in tool_lib.c. Keep CLI
-// rendering separate from Value.Text, which is also used by API consumers.
+// Use EPICS numeric and escaping conventions, with quoted text and optional
+// timestamps. Keep CLI rendering separate from the public Value.Text method.
 type outputOptions struct {
-	numeric, terse, longString, callback bool
+	numeric, terse, longString, callback, timestamp bool
 }
 
 func valueOptions(count uint32, numeric bool) []cago.RequestOption {
@@ -46,7 +46,7 @@ func formatElements(v cago.Value, count uint32, array, longString bool) string {
 		if uint64(len(data)) > uint64(count) {
 			data = data[:count]
 		}
-		return escapeText(string(data))
+		return `"` + escapeText(string(data)) + `"`
 	}
 	var out strings.Builder
 	if array {
@@ -58,7 +58,9 @@ func formatElements(v cago.Value, count uint32, array, longString bool) string {
 			out.WriteByte(' ')
 		}
 		if i >= v.Count() {
-			if v.Type().Base() != cago.String {
+			if v.Type().Base() == cago.String {
+				out.WriteString(`""`)
+			} else {
 				out.WriteByte('0')
 			}
 			continue
@@ -66,7 +68,9 @@ func formatElements(v cago.Value, count uint32, array, longString bool) string {
 		element, _ := v.Index(int(i))
 		switch v.Type().Base() {
 		case cago.String:
+			out.WriteByte('"')
 			out.WriteString(escapeText(element.Text()))
+			out.WriteByte('"')
 		case cago.Float, cago.Double:
 			out.WriteString(formatFloat(element.Float64()))
 		case cago.Char:
@@ -145,6 +149,9 @@ func escapeText(text string) string {
 }
 
 func formatTimestamp(metadata cago.Metadata) string {
+	if metadata.Level != cago.Time && metadata.Timestamp.IsZero() {
+		return "<undefined>"
+	}
 	stamp := metadata.Timestamp.Local()
 	nanos := uint32(stamp.Nanosecond())
 	if metadata.Level == cago.Time {
@@ -180,6 +187,14 @@ func formatMonitorValue(pv string, v cago.Value, options outputOptions) string {
 		}
 		alarm = " " + status + " " + severity
 	}
-	return formatPVName(pv, v.Count()) + formatTimestamp(metadata) + " " +
+	return formatPVName(pv, v.Count()) + formatOutputTimestamp(metadata, options) +
 		formatValue(v, v.Count() > 1, options.longString) + alarm + "\n"
+}
+
+// Keep timestamps optional and separate their fixed-width column from values.
+func formatOutputTimestamp(metadata cago.Metadata, options outputOptions) string {
+	if !options.timestamp {
+		return ""
+	}
+	return fmt.Sprintf("%-26s  ", formatTimestamp(metadata))
 }

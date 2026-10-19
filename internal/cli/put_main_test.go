@@ -275,7 +275,7 @@ func TestPutFormatReadback(t *testing.T) {
 		want        string
 	}{
 		{8.0, false, false, "8"}, {[]float64{1, 2}, true, false, "2 1 2"},
-		{"ON", false, false, "ON"}, {[]byte{'h', 'i', 0, 0}, true, true, "hi"},
+		{"ON", false, false, `"ON"`}, {[]byte{'h', 'i', 0, 0}, true, true, `"hi"`},
 	} {
 		v, _ := cago.NewValue(tt.input)
 		if got := formatValue(v, tt.array, tt.long); got != tt.want {

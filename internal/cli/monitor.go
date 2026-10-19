@@ -16,6 +16,7 @@ import (
 func NewMonitorCommand(stdout, stderr io.Writer) *cobra.Command {
 	cmd := New("monitor [flags] PV...", "Subscribe to EPICS Channel Access updates", stdout, stderr)
 	var output outputOptions
+	cmd.Flags().BoolVarP(&output.timestamp, "timestamp", "T", false, "print the record timestamp before each value")
 	cmd.Flags().BoolVarP(&output.numeric, "numeric", "n", false, "print ENUM values as numbers")
 	cmd.Flags().BoolVarP(&output.longString, "long-string", "S", false, "print CHAR arrays as strings")
 	cmd.Args = cobra.MinimumNArgs(1)
@@ -175,7 +176,7 @@ func monitorValueEvents(ctx context.Context, pv string, events <-chan cago.Event
 		} else if change.Info.State == cago.Searching && connected {
 			connected = false
 			lastLoss = change.At
-			text := formatPVName(pv, connection.count) + formatTimestamp(cago.Metadata{Timestamp: change.At}) + " *** disconnected\n"
+			text := formatPVName(pv, connection.count) + formatOutputTimestamp(cago.Metadata{Timestamp: change.At}, output) + "*** disconnected\n"
 			if _, err := io.WriteString(stdout, text); err != nil {
 				return true
 			}

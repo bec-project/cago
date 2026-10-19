@@ -206,17 +206,18 @@ whose name starts with `-`.
 
 `cago get` starts discovery for all requested PVs and gives each read its own
 operation timeout, so an unavailable PV does not suppress healthy PV results.
-Value output follows the EPICS command tools: scalar PV names occupy at least
-30 columns, arrays print their count followed by space-separated elements,
+Scalar PV names occupy at least 30 columns, arrays print their count followed by space-separated elements,
 floating-point values use six significant digits, and strings use EPICS escaping
-without surrounding quotes. ENUMs print labels; `-n` selects numeric indices.
+inside double quotes, including CHAR arrays printed with `-S`. ENUMs print
+quoted labels; `-n` selects numeric indices.
 `get -t` omits PV names and `get -S` / `monitor -S` print CHAR arrays as text.
 Like synchronous `caget`, default `get` reads native capacity and prints zeros
 for unused waveform elements. `get -c` follows callback `caget -c` and prints the
 actual returned length. `--count N` limits either mode, clamped to native capacity.
-Monitors print local timestamps with six fractional digits and alarm names when
-an alarm is present; undefined timestamps, disconnects and initially missing PVs
-use the EPICS tool conventions.
+Both `get` and `monitor` omit timestamps by default. Add `--timestamp` (`-T`)
+to print local record timestamps with six fractional digits and two spaces before
+the value. Monitors also print alarm names when an alarm is present. Undefined
+timestamps, disconnects and initially missing PVs use the EPICS tool conventions.
 
 `cago info` prints the compact `cainfo` connection report: state, host, access,
 native and request types, and element count. It does not read the PV value.

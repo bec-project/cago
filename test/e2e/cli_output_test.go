@@ -10,6 +10,7 @@ import (
 	"net"
 	"os/exec"
 	"regexp"
+	"strings"
 	"testing"
 	"time"
 
@@ -102,7 +103,7 @@ func TestSoftIOCOutputMatchesEPICSTools(t *testing.T) {
 	} {
 		t.Run("get/"+tt.pv+fmt.Sprint(tt.flags), func(t *testing.T) {
 			pv := i.prefix + tt.pv
-			want := referenceOutput(t, "caget", append(tt.reference, pv)...)
+			want := quotedReferenceValues(referenceOutput(t, "caget", append(tt.reference, pv)...))
 			got := commandOutput(t, append(append([]string{"get"}, tt.flags...), pv)...)
 			if got != want {
 				t.Fatalf("got %q, want %q", got, want)
@@ -118,14 +119,17 @@ func TestSoftIOCOutputMatchesEPICSTools(t *testing.T) {
 	} {
 		t.Run("monitor/"+tt.pv+fmt.Sprint(tt.flags), func(t *testing.T) {
 			pv := i.prefix + tt.pv
-			want := referenceMonitorLine(t, append(tt.flags, pv)...)
+			want := quotedReferenceValues(referenceMonitorLine(t, append(tt.flags, pv)...))
+			// Cago timestamps are opt-in and use two spaces before the value.
+			want = strings.ReplaceAll(want, "<undefined> ", "<undefined>                 ")
+			want = regexp.MustCompile(`(\d{4}-\d\d-\d\d \d\d:\d\d:\d\d\.\d{6}) `).ReplaceAllString(want, "${1}  ")
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
 			out := &cliMonitorOutput{cancel: cancel}
 			var stderr bytes.Buffer
 			cmd := cli.NewRootCommand(out, &stderr)
 			cmd.SetContext(ctx)
-			if code := cli.Execute(cmd, append(append([]string{"monitor"}, tt.flags...), pv)); code != 0 || stderr.Len() != 0 {
+			if code := cli.Execute(cmd, append(append([]string{"monitor", "--timestamp"}, tt.flags...), pv)); code != 0 || stderr.Len() != 0 {
 				t.Fatalf("exit=%d stderr=%s", code, &stderr)
 			}
 			if got := out.String(); got != want {
@@ -133,6 +137,14 @@ func TestSoftIOCOutputMatchesEPICSTools(t *testing.T) {
 			}
 		})
 	}
+	t.Run("get/timestamp", func(t *testing.T) {
+		pv := i.prefix + "Double"
+		want := strings.TrimSuffix(referenceMonitorLine(t, pv), "  \n") + "\n"
+		want = regexp.MustCompile(`(\d{4}-\d\d-\d\d \d\d:\d\d:\d\d\.\d{6}) `).ReplaceAllString(want, "${1}  ")
+		if got := commandOutput(t, "get", "--timestamp", pv); got != want {
+			t.Fatalf("got %q, want %q", got, want)
+		}
+	})
 	for _, tt := range []struct {
 		pv            string
 		old           any
@@ -149,7 +161,7 @@ func TestSoftIOCOutputMatchesEPICSTools(t *testing.T) {
 			pv := i.prefix + tt.pv
 			put(t, c.Channel(pv), tt.old)
 			args := append(append(append([]string{"-c"}, tt.flags...), pv), tt.values...)
-			want := referenceOutput(t, "caput", args...)
+			want := quotedReferenceValues(referenceOutput(t, "caput", args...))
 			put(t, c.Channel(pv), tt.old)
 			got := commandOutput(t, append([]string{"put"}, args...)...)
 			if got != want {
@@ -168,4 +180,15 @@ func TestSoftIOCOutputMatchesEPICSTools(t *testing.T) {
 			t.Fatalf("got %q, want %q", got, want)
 		}
 	})
+}
+
+// These fixture values intentionally differ from EPICS Base's unquoted text.
+// Keep the numeric, count, escaping, alarm and timestamp comparisons intact.
+func quotedReferenceValues(text string) string {
+	for _, value := range []string{`line\n\"quoted\"\t\\`, "User Operation 400mA top-up", "OFF", "ON", `a\n\xff`, `a\nline`, "x"} {
+		text = strings.ReplaceAll(text, " "+value+"\n", " "+`"`+value+`"`+"\n")
+		text = strings.ReplaceAll(text, " "+value+"  ", " "+`"`+value+`"`+"  ")
+		text = strings.ReplaceAll(text, " "+value+" UDF ", " "+`"`+value+`"`+" UDF ")
+	}
+	return text
 }

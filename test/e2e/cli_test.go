@@ -29,7 +29,7 @@ func TestSoftIOCUnifiedCLI(t *testing.T) {
 		{[]string{"get", "--timeout", "2s", i.prefix + "Long"}, fmt.Sprintf("%-30s 42\n", i.prefix+"Long")},
 		{[]string{"put", "-c", "-t", i.prefix + "Double", "-1.25"}, "-1.25\n"},
 		{[]string{"get", i.prefix + "Double"}, fmt.Sprintf("%-30s -1.25\n", i.prefix+"Double")},
-		{[]string{"put", "-c", "-t", i.prefix + "Enum", "OFF"}, "OFF\n"},
+		{[]string{"put", "-c", "-t", i.prefix + "Enum", "OFF"}, "\"OFF\"\n"},
 	} {
 		var out, stderr bytes.Buffer
 		cmd := cli.NewRootCommand(&out, &stderr)

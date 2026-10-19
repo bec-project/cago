@@ -16,6 +16,7 @@ func NewGetCommand(stdout, stderr io.Writer) *cobra.Command {
 	timeout := cmd.Flags().Duration("timeout", 5*time.Second, "operation timeout")
 	count := cmd.Flags().Uint64("count", 0, "element count (0 means native capacity, or current length with -c)")
 	var output outputOptions
+	cmd.Flags().BoolVarP(&output.timestamp, "timestamp", "T", false, "print the record timestamp before each value")
 	cmd.Flags().BoolVarP(&output.numeric, "numeric", "n", false, "print ENUM values as numbers")
 	cmd.Flags().BoolVarP(&output.terse, "terse", "t", false, "print values without PV names")
 	cmd.Flags().BoolVarP(&output.longString, "long-string", "S", false, "print CHAR arrays as strings")
@@ -82,7 +83,7 @@ func readValues(parent context.Context, pvs []string, timeout time.Duration, cou
 			failed = true
 			continue
 		}
-		if _, err := fmt.Fprintf(stdout, "%s%s\n", name, formatElements(v, printedCount, count != 0 || printedCount > 1, output.longString)); err != nil {
+		if _, err := fmt.Fprintf(stdout, "%s%s%s\n", name, formatOutputTimestamp(v.Metadata(), output), formatElements(v, printedCount, count != 0 || printedCount > 1, output.longString)); err != nil {
 			fmt.Fprintln(stderr, err)
 			failed = true
 		}
