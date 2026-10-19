@@ -1,8 +1,8 @@
-# cago
-
 <p align="center">
   <img src="assets/cago-icon.png" alt="Cago gopher inside a C-shaped channel with connection terminals" width="240">
 </p>
+
+# cago
 
 A pure-Go EPICS Channel Access client and CLI. The library uses only the standard
 library; no libca, EPICS Base installation, cgo, or external repeater is required
