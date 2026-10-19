@@ -6,14 +6,15 @@ installation, cgo, or external repeater is required at runtime.
 
 Requires Go 1.27 or newer. No experimental build flags are required.
 
-The Go module lives at the repository root, with the reusable `cago` library
-under `pkg/cago`. The layout follows
+The Go module lives at the repository root. `pkg/cago` exposes the application
+API, while `internal/ca` owns the Channel Access implementation. The layout follows
 [Go Project Layout](https://github.com/golang-standards/project-layout):
 
 ```text
 go.mod, go.sum       Module definition and dependencies
-pkg/cago/           Public library and its unit tests
+pkg/cago/           Supported application API and API tests
 cmd/cago/           CLI entry point
+internal/ca/        Private client runtime and implementation tests
 internal/cli/       Command implementations
 internal/wire/      Private protocol framing
 test/e2e/           IOC integration tests and testdata
@@ -23,6 +24,15 @@ bin/                Generated executables and local artifacts (ignored)
 
 Run source-tree commands from the repository root. Import the library as
 `github.com/wakonig/cago/pkg/cago`.
+
+The public package exposes client/channel/subscription handles, values and
+metadata, configuration, groups, and metrics. Handle and value types are selected
+aliases so shared identity and event streams are preserved across this boundary.
+Discovery, circuits, attachment and reconnect logic, decoding, queueing, and the
+repeater stay under `internal`; applications cannot import those packages.
+Raw `DecodeValue` and standalone `StartRepeater` helpers are internal rather than
+part of the supported application API. Values for writes use `NewValue`; received
+values come from reads and subscriptions.
 
 On arm64, `GOEXPERIMENT=simd` enables an optional experimental NEON path for
 FLOAT/DOUBLE array encoding and decoding. Standard builds and other architectures
@@ -163,7 +173,7 @@ Initial search-address DNS resolution honors cancellation and is bounded by
 lifetime. The `cago get`, `cago put`, and `cago info` timeout options also bound this setup step.
 TCP nameservers are searched independently, with repeated searches coalesced per
 channel while an endpoint is busy. A stalled nameserver does not delay replies
-from healthy endpoints. Standalone repeater startup also honors cancellation
+from healthy endpoints. Embedded repeater startup also honors cancellation
 during DNS resolution.
 
 Install the unified CLI, then select an operation with a subcommand:

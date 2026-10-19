@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/wakonig/cago/internal/ca"
 	"github.com/wakonig/cago/pkg/cago"
 )
 
@@ -26,7 +27,7 @@ func infoTimeValue(t *testing.T, input any, status, severity uint16) cago.Value 
 	binary.BigEndian.PutUint32(payload[4:8], 1_161_189_236)
 	binary.BigEndian.PutUint32(payload[8:12], 759_734_567)
 	copy(payload[offsets[value.Type()]:], value.Bytes())
-	result, err := cago.DecodeValue(cago.DataType(cago.Time)*7+value.Type(), value.Count(), payload)
+	result, err := ca.DecodeValue(cago.DataType(cago.Time)*7+value.Type(), value.Count(), payload)
 	if err != nil {
 		t.Fatal(err)
 	}
