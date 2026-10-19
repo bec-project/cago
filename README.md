@@ -17,6 +17,8 @@ go install github.com/wakonig/cago/cmd/cago@latest
 
 ## Library
 
+Read, write, and subscribe through a channel handle:
+
 ```go
 package main
 
@@ -36,18 +38,40 @@ func main() {
     }
     defer client.Close()
 
-    events, err := client.Subscribe(ctx, "SLS:STATUS", cago.WithMetadata(cago.Time))
+    channel := client.Channel("SLS:SETPOINT")
+
+    // Get the current value.
+    current, err := channel.Get(ctx)
     if err != nil {
         log.Fatal(err)
     }
-    for event := range events {
+    fmt.Println(current.Slice())
+
+    // Put a new value.
+    value, err := cago.NewValue(1.25)
+    if err != nil {
+        log.Fatal(err)
+    }
+    if err := channel.Put(ctx, value); err != nil {
+        log.Fatal(err)
+    }
+
+    // Subscribe to value updates.
+    sub, err := channel.Subscribe(ctx, cago.WithMetadata(cago.Time))
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer sub.Cancel()
+
+    for event := range sub.Events() {
         fmt.Println(event.PV, event.Value.Slice(), event.Value.Metadata().Timestamp)
     }
 }
 ```
 
-Subscriptions reconnect automatically. Cancel their context to unsubscribe;
-recoverable monitor failures are reported through `client.Errors()`.
+Use `PutNotify` instead of `Put` to wait for IOC processing acknowledgement.
+Subscriptions reconnect automatically. Call `sub.Cancel()` or cancel their context
+to unsubscribe; recoverable monitor failures are reported through `sub.Errors()`.
 
 Features include reads and writes, shared subscriptions, native CA types and
 metadata, array support, grouped operations, and client metrics. Discovery uses
