@@ -33,11 +33,18 @@ func (g *Group) Get(ch *Channel, options ...RequestOption) (*ReadResult, error) 
 	g.jobs = append(g.jobs, func(ctx context.Context) error { result.Value, result.Err = ch.Get(ctx, options...); return result.Err })
 	return result, nil
 }
-func (g *Group) Put(ch *Channel, v Value) error {
+
+// Put queues an acknowledged write of a Go scalar, array, slice, or Value.
+// Go inputs are copied and validated when queued, before Run is called.
+func (g *Group) Put(ch *Channel, input any) error {
 	g.mu.Lock()
 	defer g.mu.Unlock()
 	if g.running {
 		return errors.New("group running")
+	}
+	v, err := writeValue(input)
+	if err != nil {
+		return err
 	}
 	g.jobs = append(g.jobs, func(ctx context.Context) error { return ch.PutNotify(ctx, v) })
 	return nil

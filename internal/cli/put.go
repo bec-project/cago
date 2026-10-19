@@ -160,8 +160,8 @@ type putChannel interface {
 	Connect(context.Context) error
 	Info() cago.ChannelInfo
 	Get(context.Context, ...cago.RequestOption) (cago.Value, error)
-	Put(context.Context, cago.Value) error
-	PutNotify(context.Context, cago.Value) error
+	Put(context.Context, any) error
+	PutNotify(context.Context, any) error
 }
 
 func (c putConfig) get(ctx context.Context, ch putChannel, options ...cago.RequestOption) (cago.Value, error) {

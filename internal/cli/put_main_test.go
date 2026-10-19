@@ -171,16 +171,16 @@ func TestPutOldReadbackFailureDoesNotSuppressWrite(t *testing.T) {
 		}
 	}
 }
-func (f *fakeChannel) Put(ctx context.Context, value cago.Value) error {
-	f.written = append(f.written, value)
+func (f *fakeChannel) Put(ctx context.Context, value any) error {
+	f.written = append(f.written, value.(cago.Value))
 	f.record(ctx, "put")
 	if f.put != nil {
 		return f.put(ctx)
 	}
 	return nil
 }
-func (f *fakeChannel) PutNotify(ctx context.Context, value cago.Value) error {
-	f.written = append(f.written, value)
+func (f *fakeChannel) PutNotify(ctx context.Context, value any) error {
+	f.written = append(f.written, value.(cago.Value))
 	f.record(ctx, "notify")
 	if f.notify != nil {
 		return f.notify(ctx)

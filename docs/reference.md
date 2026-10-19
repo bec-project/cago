@@ -27,8 +27,9 @@ aliases so shared identity and event streams are preserved across this boundary.
 Discovery, circuits, attachment and reconnect logic, decoding, queueing, and the
 repeater stay under `internal`; applications cannot import those packages.
 Raw `DecodeValue` and standalone `StartRepeater` helpers are internal rather than
-part of the supported application API. Values for writes use `NewValue`; received
-values come from reads and subscriptions.
+part of the supported application API. `Put`, `PutNotify`, and `Group.Put` accept
+Go scalars, arrays, slices, or an existing `Value`. Use `NewValue` to prepare a
+reusable write value; received values come from reads and subscriptions.
 
 On arm64, `GOEXPERIMENT=simd` enables an optional experimental NEON path for
 FLOAT/DOUBLE array encoding and decoding. Standard builds and other architectures
@@ -376,4 +377,3 @@ Independent unit/fault tests remain in this repository. Development-only libca
 and `epics-engineer/ca` comparison harnesses and their results are kept outside
 this repository, as requested. Passing those checks is not a claim of complete
 libca regression-suite equivalence or production qualification.
-

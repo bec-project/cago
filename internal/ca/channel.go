@@ -352,10 +352,18 @@ func (ch *Channel) Get(ctx context.Context, options ...RequestOption) (Value, er
 	}
 }
 
-// Put sends a value; PutNotify also waits for server processing acknowledgement.
-func (ch *Channel) Put(ctx context.Context, value Value) error       { return ch.put(ctx, value, false) }
-func (ch *Channel) PutNotify(ctx context.Context, value Value) error { return ch.put(ctx, value, true) }
-func (ch *Channel) put(ctx context.Context, value Value, notify bool) error {
+// Put sends a Go scalar, array, slice, or existing Value. Conversion errors are
+// returned before connecting or sending the write.
+func (ch *Channel) Put(ctx context.Context, value any) error { return ch.put(ctx, value, false) }
+
+// PutNotify accepts the same inputs as Put and also waits for server processing
+// acknowledgement.
+func (ch *Channel) PutNotify(ctx context.Context, value any) error { return ch.put(ctx, value, true) }
+func (ch *Channel) put(ctx context.Context, input any, notify bool) error {
+	value, err := writeValue(input)
+	if err != nil {
+		return err
+	}
 	for {
 		b, err := ch.waitBinding(ctx)
 		if err != nil {

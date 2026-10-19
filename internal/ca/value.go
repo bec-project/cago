@@ -132,6 +132,14 @@ func number(t DataType, b []byte) float64 {
 	return 0
 }
 
+// writeValue preserves preconstructed values and snapshots Go inputs for writes.
+func writeValue(input any) (Value, error) {
+	if value, ok := input.(Value); ok {
+		return value, nil
+	}
+	return NewValue(input)
+}
+
 // NewValue accepts strings, int16, uint16 (enum), byte, int32, float32,
 // float64, and slices of those types. Go int/int64 values must fit CA LONG.
 func NewValue(input any) (Value, error) {

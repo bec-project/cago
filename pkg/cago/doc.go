@@ -1,7 +1,7 @@
 // Package cago provides a pure-Go EPICS Channel Access client.
 //
 // Applications use New to create a Client, Client.Channel to obtain durable
-// channel handles, and NewValue to construct values for writes. Channels support
+// channel handles, and Put to write Go values directly. Channels support
 // reads, writes, metadata, and subscriptions controlled by Go contexts.
 //
 // This package defines the supported application API. The connection runtime,

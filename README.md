@@ -45,14 +45,10 @@ func main() {
     if err != nil {
         log.Fatal(err)
     }
-    fmt.Println(current.Slice())
+    fmt.Println(current.Float64())
 
     // Put a new value.
-    value, err := cago.NewValue(1.25)
-    if err != nil {
-        log.Fatal(err)
-    }
-    if err := channel.Put(ctx, value); err != nil {
+    if err := channel.Put(ctx, 1.25); err != nil {
         log.Fatal(err)
     }
 
@@ -64,7 +60,7 @@ func main() {
     defer sub.Cancel()
 
     for event := range sub.Events() {
-        fmt.Println(event.PV, event.Value.Slice(), event.Value.Metadata().Timestamp)
+        fmt.Println(event.PV, event.Value.Float64(), event.Value.Metadata().Timestamp)
     }
 }
 ```
