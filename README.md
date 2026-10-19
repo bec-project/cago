@@ -1,5 +1,9 @@
 # cago
 
+<p align="center">
+  <img src="assets/cago-icon.png" alt="Cago gopher inside a C-shaped channel with connection terminals" width="240">
+</p>
+
 A fresh Go implementation of EPICS Channel Access. The library uses only the
 standard library; the command-line tools use Cobra. No libca, EPICS Base
 installation, cgo, or external repeater is required at runtime.
@@ -380,3 +384,8 @@ Independent unit/fault tests remain in this repository. Development-only libca
 and `epics-engineer/ca` comparison harnesses and their results are kept outside
 this repository, as requested. Passing those checks is not a claim of complete
 libca regression-suite equivalence or production qualification.
+
+## Icon attribution
+
+The Cago icon is an adaptation of the Go gopher by Renée French, licensed under
+[Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/).
