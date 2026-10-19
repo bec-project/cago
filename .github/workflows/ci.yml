@@ -1,0 +1,77 @@
+name: Go and EPICS IOC validation
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+      - name: Race, shuffled unit tests and coverage
+        run: go test -race -shuffle=on -covermode=atomic -coverprofile="$RUNNER_TEMP/coverage.out" ./...
+      - name: Require more than 90 percent in every package
+        run: ./scripts/check-coverage.sh "$RUNNER_TEMP/coverage.out" 90
+      - name: Vet
+        run: go vet ./...
+      - name: Build without cgo
+        env:
+          CGO_ENABLED: '0'
+        run: go build ./...
+
+  ioc:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+      - name: Install EPICS build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential perl libreadline-dev
+      - name: Cache pinned EPICS Base build
+        id: epics
+        uses: actions/cache@v6
+        with:
+          path: ${{ runner.temp }}/epics-base
+          key: epics-base-7.0.8.1-${{ runner.os }}-${{ runner.arch }}-ubuntu24-v1
+      - name: Build EPICS Base 7.0.8.1
+        if: steps.epics.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          curl --fail --location --retry 3 https://epics.anl.gov/download/base/base-7.0.8.1.tar.gz -o "$RUNNER_TEMP/epics-base.tar.gz"
+          echo "6c93a5e09b21392adbb3de423605d428ee4ddb1272fc708a251b082272fa73f5  $RUNNER_TEMP/epics-base.tar.gz" | sha256sum --check
+          mkdir -p "$RUNNER_TEMP/epics-base"
+          tar -xzf "$RUNNER_TEMP/epics-base.tar.gz" --strip-components=1 -C "$RUNNER_TEMP/epics-base"
+          make -C "$RUNNER_TEMP/epics-base" -j2
+      - name: Locate IOC
+        shell: bash
+        run: |
+          epics_arch=$("$RUNNER_TEMP/epics-base/startup/EpicsHostArch")
+          test -x "$RUNNER_TEMP/epics-base/bin/$epics_arch/softIoc"
+          echo "$RUNNER_TEMP/epics-base/bin/$epics_arch" >> "$GITHUB_PATH"
+      - name: Race and shuffled real IOC tests
+        env:
+          CAGO_REQUIRE_IOC: '1'
+        run: go test -race -tags=e2e -shuffle=on -count=2 -timeout=5m -v ./test/e2e
