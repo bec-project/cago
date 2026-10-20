@@ -10,6 +10,13 @@ at runtime. Requires **Go 1.27 or newer**.
 
 ## Install
 
+Download a prebuilt CLI for Linux, macOS, or Windows (amd64 or arm64) from
+[GitHub Releases](https://github.com/wakonig/cago/releases). Extract the archive
+and put `cago` (`cago.exe` on Windows) on your `PATH`. SHA-256 checksums are
+provided in `checksums.txt`. Prebuilt binaries do not include Fyne plotting.
+
+To install from source:
+
 ```sh
 go get github.com/wakonig/cago/pkg/cago
 go install github.com/wakonig/cago/cmd/cago@latest
@@ -90,6 +97,33 @@ EPICS_CA_ADDR_LIST=127.0.0.1 EPICS_CA_AUTO_ADDR_LIST=NO cago get PV:NAME
 ```
 
 ## Development
+
+### Releases
+
+After CI succeeds on a push to `main`, semantic-release determines the next
+version from Conventional Commit messages and publishes a GitHub Release with
+release notes, six binary archives, and SHA-256 checksums. No manual tag or npm
+publication is needed. The first release is `v1.0.0`.
+
+- `fix: ...` creates a patch release.
+- `feat: ...` creates a minor release.
+- A `BREAKING CHANGE:` footer creates a major release.
+- Documentation, test, and maintenance commits do not trigger a release.
+
+When squash merging, use a Conventional Commit PR title and preserve any
+`BREAKING CHANGE:` footer in the final commit message.
+
+Node.js 24 is only needed for release tooling (`npm ci`). With GoReleaser v2.18.0
+installed, preview the binary archives locally without publishing:
+
+```sh
+RELEASE_VERSION=0.0.0-dev goreleaser release --snapshot --clean
+```
+
+Repository rules must allow the Actions `GITHUB_TOKEN` to create `v*` tags and
+releases. Release automation uses only the token provided by GitHub Actions.
+
+### Checks
 
 ```sh
 go test -race -shuffle=on -coverprofile=/tmp/cago-coverage.out ./...
