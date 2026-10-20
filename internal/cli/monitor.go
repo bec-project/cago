@@ -16,12 +16,14 @@ import (
 func NewMonitorCommand(stdout, stderr io.Writer) *cobra.Command {
 	cmd := New("monitor [flags] PV...", "Subscribe to EPICS Channel Access updates", stdout, stderr)
 	var output outputOptions
-	cmd.Flags().BoolVarP(&output.timestamp, "timestamp", "T", false, "print the record timestamp before each value")
+	var table bool
+	cmd.Long = "Subscribe to EPICS Channel Access updates in a timestamp-first history table with PV column headers.\nUse --table to show only the latest value of each PV. Requires an interactive terminal."
+	cmd.Flags().BoolVar(&table, "table", false, "show the latest value per PV instead of event history")
 	cmd.Flags().BoolVarP(&output.numeric, "numeric", "n", false, "print ENUM values as numbers")
 	cmd.Flags().BoolVarP(&output.longString, "long-string", "S", false, "print CHAR arrays as strings")
 	cmd.Args = cobra.MinimumNArgs(1)
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		return Runtime(monitorValues(cmd.Context(), args, output, cmd.OutOrStdout(), cmd.ErrOrStderr()))
+		return Runtime(monitorTable(cmd.Context(), args, output, cmd.InOrStdin(), cmd.OutOrStdout(), !table))
 	}
 	return cmd
 }
@@ -31,6 +33,15 @@ func monitor(ctx context.Context, pvs []string, stdout, stderr io.Writer) error 
 }
 
 func monitorValues(ctx context.Context, pvs []string, output outputOptions, stdout, stderr io.Writer) error {
+	return monitorValuesObserved(ctx, pvs, output, stdout, stderr, nil)
+}
+
+func monitorValuesObserved(ctx context.Context, pvs []string, output outputOptions, stdout, stderr io.Writer, observe func(cago.Event, uint32)) error {
+	return monitorValuesNotified(ctx, pvs, output, stdout, stderr, observe, nil)
+}
+
+// notify reports connection and subscription problems separately from text output.
+func monitorValuesNotified(ctx context.Context, pvs []string, output outputOptions, stdout, stderr io.Writer, observe func(cago.Event, uint32), notify func(string, string)) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	// Cobra output may be a caller-supplied buffer rather than an os.File.
@@ -70,6 +81,9 @@ func monitorValues(ctx context.Context, pvs []string, output outputOptions, stdo
 			err := ch.Connect(initial)
 			stop()
 			if errors.Is(err, context.DeadlineExceeded) && ctx.Err() == nil {
+				if notify != nil {
+					notify(pv, "not connected")
+				}
 				if _, writeErr := fmt.Fprintln(stdout, formatPVName(pv, 0)+"*** Not connected (PV not found)"); writeErr != nil {
 					failed.Store(true)
 					cancel()
@@ -87,6 +101,9 @@ func monitorValues(ctx context.Context, pvs []string, output outputOptions, stdo
 			}
 			if err != nil {
 				if !errors.Is(ctx.Err(), context.Canceled) {
+					if notify != nil {
+						notify(pv, err.Error())
+					}
 					failed.Store(true)
 					if _, writeErr := fmt.Fprintln(stderr, pv, err); writeErr != nil {
 						cancel()
@@ -95,7 +112,10 @@ func monitorValues(ctx context.Context, pvs []string, output outputOptions, stdo
 				return
 			}
 			defer sub.Cancel()
-			connection := monitorConnection{changes: ch.StateChanges(), count: ch.Info().Count}
+			connection := monitorConnection{changes: ch.StateChanges(), count: ch.Info().Count, notify: notify}
+			if observe != nil {
+				connection.observe = func(e cago.Event) { observe(e, ch.Info().Count) }
+			}
 			if monitorValueEvents(ctx, pv, sub.Events(), sub.Errors(), output, connection, stdout, stderr) {
 				failed.Store(true)
 				// A terminal stream/output failure must also release siblings
@@ -149,6 +169,8 @@ func monitorEvents(ctx context.Context, pv string, events <-chan cago.Event, err
 type monitorConnection struct {
 	changes <-chan cago.StateChange
 	count   uint32
+	observe func(cago.Event)
+	notify  func(string, string)
 }
 
 func drainStateChanges(changes <-chan cago.StateChange) {
@@ -173,9 +195,15 @@ func monitorValueEvents(ctx context.Context, pv string, events <-chan cago.Event
 		}
 		if change.Info.State == cago.Connected {
 			connected = true
+			if connection.notify != nil {
+				connection.notify(pv, "waiting for value")
+			}
 		} else if change.Info.State == cago.Searching && connected {
 			connected = false
 			lastLoss = change.At
+			if connection.notify != nil {
+				connection.notify(pv, "disconnected")
+			}
 			text := formatPVName(pv, connection.count) + formatOutputTimestamp(cago.Metadata{Timestamp: change.At}, output) + "*** disconnected\n"
 			if _, err := io.WriteString(stdout, text); err != nil {
 				return true
@@ -227,13 +255,23 @@ func monitorValueEvents(ctx context.Context, pv string, events <-chan cago.Event
 				continue
 			}
 			connection.count = e.Value.Count()
-			if _, err := io.WriteString(stdout, formatMonitorValue(e.PV, e.Value, output)); err != nil {
-				return true
+			if connection.observe != nil {
+				connection.observe(e)
+			}
+			// Table mode consumes structured events and does its own bounded
+			// formatting; do not format full waveforms for a discarded log.
+			if connection.notify == nil {
+				if _, err := io.WriteString(stdout, formatMonitorValue(e.PV, e.Value, output)); err != nil {
+					return true
+				}
 			}
 		case err, ok := <-errs:
 			if !ok {
 				errs = nil
 				continue
+			}
+			if connection.notify != nil {
+				connection.notify(pv, err.Error())
 			}
 			if _, writeErr := fmt.Fprintln(stderr, pv, err); writeErr != nil {
 				return true

@@ -87,8 +87,16 @@ Supports IPv4 Channel Access clients; CA servers and pvAccess are outside its sc
 cago get PV:NAME
 cago put PV:SETPOINT 1.25
 cago info PV:NAME
-cago monitor --timestamp PV:NAME
+cago monitor PV:CURRENT PV:SETPOINT
+cago monitor --table PV:CURRENT PV:SETPOINT
 ```
+
+Monitoring opens a timestamp-first history table with PV names as column headers.
+Each update adds a row. The header stays fixed; scroll up to pause following new
+rows and press End to resume. The latest 10,000 events are retained. Use `--table`
+for one row per PV showing its latest value, timestamp, alarms, and connection
+state. Arrow keys and Page Up/Down scroll; `q` or Ctrl+C exits. Both modes require
+interactive terminal input and output.
 
 Use `cago <command> --help` for options. For local discovery, for example:
 
