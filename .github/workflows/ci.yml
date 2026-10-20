@@ -24,7 +24,7 @@ jobs:
     outputs:
       run-ci: ${{ steps.check.outputs.result }}
     steps:
-      - uses: actions/github-script@v8
+      - uses: actions/github-script@v9
         id: check
         with:
           script: |
