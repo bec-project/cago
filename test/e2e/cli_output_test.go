@@ -129,7 +129,7 @@ func TestSoftIOCOutputMatchesEPICSTools(t *testing.T) {
 			var stderr bytes.Buffer
 			cmd := cli.NewRootCommand(out, &stderr)
 			cmd.SetContext(ctx)
-			if code := cli.Execute(cmd, append(append([]string{"monitor", "--timestamp"}, tt.flags...), pv)); code != 0 || stderr.Len() != 0 {
+			if code := cli.Execute(cmd, append(append([]string{"monitor", "--plain", "--timestamp"}, tt.flags...), pv)); code != 0 || stderr.Len() != 0 {
 				t.Fatalf("exit=%d stderr=%s", code, &stderr)
 			}
 			if got := out.String(); got != want {

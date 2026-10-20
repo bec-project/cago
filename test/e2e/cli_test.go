@@ -66,7 +66,7 @@ func TestSoftIOCUnifiedCLI(t *testing.T) {
 	stderr.Reset()
 	cmd = cli.NewRootCommand(monitor, &stderr)
 	cmd.SetContext(ctx)
-	if code := cli.Execute(cmd, []string{"monitor", i.prefix + "Long"}); code != 0 || stderr.Len() != 0 || !strings.Contains(monitor.String(), fmt.Sprintf("%-30s ", i.prefix+"Long")) || !strings.Contains(monitor.String(), " 42 UDF NO_ALARM\n") {
+	if code := cli.Execute(cmd, []string{"monitor", "--plain", i.prefix + "Long"}); code != 0 || stderr.Len() != 0 || !strings.Contains(monitor.String(), fmt.Sprintf("%-30s ", i.prefix+"Long")) || !strings.Contains(monitor.String(), " 42 UDF NO_ALARM\n") {
 		t.Fatalf("monitor exit=%d stdout=%q stderr=%q", code, monitor.String(), stderr.String())
 	}
 }

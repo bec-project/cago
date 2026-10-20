@@ -278,7 +278,10 @@ The fixed header remains visible as the table grows. The newest 10,000 rows are
 retained in a rolling buffer. The view follows new rows automatically. Scroll up,
 Page Up, or Home to pause following; press End or `G` to resume. While paused,
 new events are still recorded; the selected event stays in place until it expires
-from the retained history. Monitoring requires an interactive terminal; plain-text monitor output is no longer available.
+from the retained history. Use `cago monitor --plain PV...` for EPICS-style line output suitable for pipes
+and log files. Add `--timestamp` (`-T`) for record timestamps; `--numeric` and
+`--long-string` retain their existing behavior. `--plain` and `--table` are mutually
+exclusive.
 
 Run `cago monitor --table PV...` for an interactive Bubble Tea table. Each unique
 PV occupies one row in command-line order; incoming values replace that row.
@@ -296,7 +299,8 @@ shown automatically when space permits, without an extra flag.
 Missing PVs remain visible while discovery continues. Disconnects mark the row
 and retain the last value and timestamp; a new value restores the connected
 state. Connection and subscription errors appear in the connection column.
-Interactive terminal input and output are required for both monitor views.
+Interactive terminal input and output are required for both table views;
+`--plain` works without a terminal.
 
 ## Metrics
 
