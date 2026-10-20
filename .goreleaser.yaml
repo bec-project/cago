@@ -1,0 +1,34 @@
+version: 2
+project_name: cago
+
+builds:
+  - id: cago
+    main: ./cmd/cago
+    binary: cago
+    env:
+      - CGO_ENABLED=0
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+    flags: [-trimpath]
+    ldflags: [-s -w]
+
+archives:
+  - formats: [tar.gz]
+    name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    files:
+      - LICENSE
+      - README.md
+
+checksum:
+  name_template: checksums.txt
+
+# semantic-release supplies the version and publishes the generated assets.
+# Build before creating the tag, so a build failure cannot leave a release tag.
+snapshot:
+  version_template: '{{ .Env.RELEASE_VERSION }}'
+
+changelog:
+  disable: true

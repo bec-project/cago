@@ -2,3 +2,5 @@ coverage.out
 *.test
 .DS_Store
 /bin/
+/dist/
+/node_modules/
