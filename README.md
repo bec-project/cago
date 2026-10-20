@@ -13,7 +13,7 @@ at runtime. Requires **Go 1.27 or newer**.
 Download a prebuilt CLI for Linux, macOS, or Windows (amd64 or arm64) from
 [GitHub Releases](https://github.com/wakonig/cago/releases). Extract the archive
 and put `cago` (`cago.exe` on Windows) on your `PATH`. SHA-256 checksums are
-provided in `checksums.txt`. Prebuilt binaries do not include Fyne plotting.
+provided in `checksums.txt`.
 
 To install from source:
 
