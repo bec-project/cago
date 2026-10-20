@@ -142,7 +142,7 @@ jobs:
         run: go test "$FUZZ_PACKAGE" -run='^$' -fuzz="^${FUZZ_TARGET}$" -fuzztime="$FUZZ_TIME" -parallel=2 -timeout=8m
       - name: Preserve failing inputs
         if: failure()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: fuzz-failures-${{ matrix.target }}
           path: internal/**/testdata/fuzz/**
