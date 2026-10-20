@@ -62,7 +62,7 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
-      - uses: goreleaser/goreleaser-action@v6
+      - uses: goreleaser/goreleaser-action@v7
         with:
           distribution: goreleaser
           version: v2.18.0
