@@ -144,10 +144,7 @@ func TestMonitorMonitorSubscriptionEmitsTimestampAndStopsOnCancellation(t *testi
 	defer cancel()
 	out := &cancelAfterRecord{cancel: cancel}
 	var stderr bytes.Buffer
-	cmd := NewMonitorCommand(out, &stderr)
-	cmd.SetContext(ctx)
-	cmd.SetArgs([]string{"--timestamp", "HEALTHY"})
-	if err := cmd.Execute(); err != nil {
+	if err := monitorValues(ctx, []string{"HEALTHY"}, outputOptions{timestamp: true}, out, &stderr); err != nil {
 		t.Fatal(err)
 	}
 	if got := out.String(); got != formatPVName("HEALTHY", 1)+time.Unix(631152001, 25000000).Local().Format("2006-01-02 15:04:05.000000")+"  5  \n" || stderr.Len() != 0 {

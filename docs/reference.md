@@ -211,10 +211,9 @@ quoted labels; `-n` selects numeric indices.
 Like synchronous `caget`, default `get` reads native capacity and prints zeros
 for unused waveform elements. `get -c` follows callback `caget -c` and prints the
 actual returned length. `--count N` limits either mode, clamped to native capacity.
-Both `get` and `monitor` omit timestamps by default. Add `--timestamp` (`-T`)
-to print local record timestamps with six fractional digits and two spaces before
-the value. Monitors also print alarm names when an alarm is present. Undefined
-timestamps, disconnects and initially missing PVs use the EPICS tool conventions.
+`get` omits timestamps by default. Add `--timestamp` (`-T`) to print local record
+timestamps with six fractional digits and two spaces before the value. Monitor
+uses an interactive history table by default; see the live terminal table section.
 
 `cago info` prints the compact `cainfo` connection report: state, host, access,
 native and request types, and element count. It does not read the PV value.
@@ -263,6 +262,41 @@ timeouts and priorities are rejected rather than ignored or clamped. Other
 intentional differences include strict array counts and enum index validation.
 This is a small command interface, not a replacement for every EPICS Base tool
 option (such as `-l`, `-F`, and configurable numeric precision).
+
+## Live terminal table
+
+Use `cago monitor PV...` for a sequential event view with the
+timestamp in the leftmost column and each PV name in its own column header.
+Each update fills only its PV column; other cells are blank to make the event
+sequence clear. Alarm status/severity appear beside the value when active.
+Each value update adds a row, including repeated
+values. Events appear in delivery order across PVs; record timestamps may go
+backwards and are not used to sort the rows. Connection changes also add rows,
+using the local time and a message under the affected PV. Column widths adapt to
+the terminal; below 80 columns the timestamp shows time only.
+The fixed header remains visible as the table grows. The newest 10,000 rows are
+retained in a rolling buffer. The view follows new rows automatically. Scroll up,
+Page Up, or Home to pause following; press End or `G` to resume. While paused,
+new events are still recorded; the selected event stays in place until it expires
+from the retained history. Monitoring requires an interactive terminal; plain-text monitor output is no longer available.
+
+Run `cago monitor --table PV...` for an interactive Bubble Tea table. Each unique
+PV occupies one row in command-line order; incoming values replace that row.
+The header stays fixed while arrow keys, Page Up/Down, Home, and End scroll the
+rows. Press `q` or Ctrl+C to stop subscriptions and restore the terminal.
+
+PV, value, and connection state are always available. Terminals at least 126
+columns wide also show record timestamps, alarm status, and severity. Resizing
+reflows the columns. The table refreshes at most ten times per second and keeps
+only the latest row per PV, rather than an event history. Array previews show
+at most sixteen elements followed by an ellipsis when truncated. `--numeric`
+and `--long-string` retain their ordinary formatting behavior; timestamps are
+shown automatically when space permits, without an extra flag.
+
+Missing PVs remain visible while discovery continues. Disconnects mark the row
+and retain the last value and timestamp; a new value restores the connected
+state. Connection and subscription errors appear in the connection column.
+Interactive terminal input and output are required for both monitor views.
 
 ## Metrics
 
