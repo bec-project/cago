@@ -4,6 +4,8 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+  schedule:
+    - cron: '17 3 * * *'
 
 permissions:
   contents: read
@@ -13,7 +15,39 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  check_pr_status:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      run-ci: ${{ steps.check.outputs.result }}
+    steps:
+      - uses: actions/github-script@v8
+        id: check
+        with:
+          script: |
+            // Main pushes must always run: successful push CI gates releases.
+            if (context.eventName !== 'push' || context.ref === 'refs/heads/main' ||
+                !context.ref.startsWith('refs/heads/')) return true;
+            const branch = context.ref.slice('refs/heads/'.length);
+            const prs = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              head: `${context.repo.owner}:${branch}`,
+              state: 'open',
+              per_page: 1
+            });
+            if (prs.data.length) {
+              core.notice(`Skipping duplicate push CI; PR #${prs.data[0].number} runs CI.`);
+              return false;
+            }
+            return true;
+
   unit:
+    needs: check_pr_status
+    if: needs.check_pr_status.outputs.run-ci == 'true' && github.event_name != 'schedule'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -36,6 +70,8 @@ jobs:
         run: go build ./...
 
   ioc:
+    needs: check_pr_status
+    if: needs.check_pr_status.outputs.run-ci == 'true' && github.event_name != 'schedule'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -75,3 +111,56 @@ jobs:
         env:
           CAGO_REQUIRE_IOC: '1'
         run: go test -race -tags=e2e -shuffle=on -count=2 -timeout=5m -v ./test/e2e
+
+  fuzz:
+    needs: check_pr_status
+    if: needs.check_pr_status.outputs.run-ci == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - package: ./internal/wire
+            target: FuzzFrame
+          - package: ./internal/ca
+            target: FuzzDecodeValue
+          - package: ./internal/ca
+            target: FuzzNumericRoundTrip
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - name: Fuzz
+        env:
+          FUZZ_PACKAGE: ${{ matrix.package }}
+          FUZZ_TARGET: ${{ matrix.target }}
+          FUZZ_TIME: ${{ github.event_name == 'schedule' && '5m' || '30s' }}
+        run: go test "$FUZZ_PACKAGE" -run='^$' -fuzz="^${FUZZ_TARGET}$" -fuzztime="$FUZZ_TIME" -parallel=2 -timeout=8m
+      - name: Preserve failing inputs
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: fuzz-failures-${{ matrix.target }}
+          path: internal/**/testdata/fuzz/**
+          if-no-files-found: ignore
+
+  vulnerability:
+    needs: check_pr_status
+    if: needs.check_pr_status.outputs.run-ci == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - name: Install govulncheck
+        run: go install golang.org/x/vuln/cmd/govulncheck@v1.9.0
+      - name: Check for reachable vulnerabilities
+        run: govulncheck ./...
