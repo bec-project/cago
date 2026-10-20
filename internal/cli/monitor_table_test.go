@@ -246,3 +246,11 @@ func TestMonitorHistoryPVHeadersAndSparseRows(t *testing.T) {
 		}
 	}
 }
+
+func TestMonitorPlainAndTableMutuallyExclusive(t *testing.T) {
+	cmd := NewMonitorCommand(io.Discard, io.Discard)
+	cmd.SetArgs([]string{"--plain", "--table", "PV"})
+	if err := cmd.Execute(); err == nil || !strings.Contains(err.Error(), "none of the others") {
+		t.Fatalf("conflicting output modes accepted: %v", err)
+	}
+}

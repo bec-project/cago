@@ -16,13 +16,19 @@ import (
 func NewMonitorCommand(stdout, stderr io.Writer) *cobra.Command {
 	cmd := New("monitor [flags] PV...", "Subscribe to EPICS Channel Access updates", stdout, stderr)
 	var output outputOptions
-	var table bool
-	cmd.Long = "Subscribe to EPICS Channel Access updates in a timestamp-first history table with PV column headers.\nUse --table to show only the latest value of each PV. Requires an interactive terminal."
+	var table, plain bool
+	cmd.Long = "Subscribe to EPICS Channel Access updates in a timestamp-first history table with PV column headers.\nUse --table for latest values or --plain for EPICS-style text output suitable for pipes."
 	cmd.Flags().BoolVar(&table, "table", false, "show the latest value per PV instead of event history")
+	cmd.Flags().BoolVar(&plain, "plain", false, "print EPICS-style updates as plain text for pipes and logs")
+	cmd.MarkFlagsMutuallyExclusive("plain", "table")
+	cmd.Flags().BoolVarP(&output.timestamp, "timestamp", "T", false, "include record timestamps in plain output")
 	cmd.Flags().BoolVarP(&output.numeric, "numeric", "n", false, "print ENUM values as numbers")
 	cmd.Flags().BoolVarP(&output.longString, "long-string", "S", false, "print CHAR arrays as strings")
 	cmd.Args = cobra.MinimumNArgs(1)
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
+		if plain {
+			return Runtime(monitorValues(cmd.Context(), args, output, cmd.OutOrStdout(), cmd.ErrOrStderr()))
+		}
 		return Runtime(monitorTable(cmd.Context(), args, output, cmd.InOrStdin(), cmd.OutOrStdout(), !table))
 	}
 	return cmd

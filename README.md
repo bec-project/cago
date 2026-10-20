@@ -89,6 +89,7 @@ cago put PV:SETPOINT 1.25
 cago info PV:NAME
 cago monitor PV:CURRENT PV:SETPOINT
 cago monitor --table PV:CURRENT PV:SETPOINT
+cago monitor --plain --timestamp PV:CURRENT PV:SETPOINT
 ```
 
 Monitoring opens a timestamp-first history table with PV names as column headers.
@@ -96,7 +97,9 @@ Each update adds a row. The header stays fixed; scroll up to pause following new
 rows and press End to resume. The latest 10,000 events are retained. Use `--table`
 for one row per PV showing its latest value, timestamp, alarms, and connection
 state. Arrow keys and Page Up/Down scroll; `q` or Ctrl+C exits. Both modes require
-interactive terminal input and output.
+interactive terminal input and output. Use `--plain` for EPICS-style text output
+that works with pipes and log files; add `--timestamp` (`-T`) to include record
+timestamps. `--plain` and `--table` cannot be combined.
 
 Use `cago <command> --help` for options. For local discovery, for example:
 

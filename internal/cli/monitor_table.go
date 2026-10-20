@@ -301,7 +301,7 @@ func monitorTable(ctx context.Context, pvs []string, output outputOptions, stdin
 	input, inputOK := stdin.(*os.File)
 	terminal, outputOK := stdout.(*os.File)
 	if !inputOK || !outputOK || !term.IsTerminal(input.Fd()) || !term.IsTerminal(terminal.Fd()) {
-		return fmt.Errorf("monitor requires terminal input and output")
+		return fmt.Errorf("monitor requires terminal input and output; use --plain for pipes and logs")
 	}
 	workerCtx, cancel := context.WithCancel(ctx)
 	store := newMonitorTableStore(pvs, output)
