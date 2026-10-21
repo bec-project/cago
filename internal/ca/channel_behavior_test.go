@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/wakonig/cago/internal/wire"
+	"github.com/bec-project/cago/internal/wire"
 )
 
 // scriptedProtocolChannel owns both ends of a protocol connection so tests can

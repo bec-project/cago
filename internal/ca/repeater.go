@@ -10,7 +10,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/wakonig/cago/internal/wire"
+	"github.com/bec-project/cago/internal/wire"
 )
 
 // Repeater is an optional standalone CA UDP beacon forwarding service.

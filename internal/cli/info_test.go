@@ -15,8 +15,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/wakonig/cago/internal/wire"
-	"github.com/wakonig/cago/pkg/cago"
+	"github.com/bec-project/cago/internal/wire"
+	"github.com/bec-project/cago/pkg/cago"
 )
 
 type infoTestPV struct {

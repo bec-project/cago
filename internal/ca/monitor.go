@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/wakonig/cago/internal/wire"
+	"github.com/bec-project/cago/internal/wire"
 )
 
 // Preserve requested type semantics: Native and explicit Double remain

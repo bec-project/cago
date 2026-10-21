@@ -3,7 +3,7 @@ package cago
 import (
 	"context"
 
-	"github.com/wakonig/cago/internal/ca"
+	"github.com/bec-project/cago/internal/ca"
 )
 
 // Client owns application channels and subscriptions. Close releases its resources.

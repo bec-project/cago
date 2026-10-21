@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
-	"github.com/wakonig/cago/internal/wire"
+	"github.com/bec-project/cago/internal/wire"
 	"net"
 	"runtime"
 	"sync"
@@ -241,7 +241,7 @@ func TestQueuedClearSkipsLaterServerDisconnect(t *testing.T) {
 				// Observe the queued send itself, so loss cannot accidentally
 				// precede the outer alive check and hide the gate race.
 				n := runtime.Stack(stack, true)
-				if bytes.Contains(stack[:n], []byte("github.com/wakonig/cago/internal/ca.(*circuit).sendBound")) {
+				if bytes.Contains(stack[:n], []byte("github.com/bec-project/cago/internal/ca.(*circuit).sendBound")) {
 					break
 				}
 				if time.Now().After(deadline) {

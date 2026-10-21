@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/wakonig/cago/internal/wire"
+	"github.com/bec-project/cago/internal/wire"
 )
 
 // A small bounded delay combines concurrently starting channels without

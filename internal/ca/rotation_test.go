@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/wakonig/cago/internal/wire"
+	"github.com/bec-project/cago/internal/wire"
 )
 
 func rotationClient(t *testing.T, server *testIOC, drain time.Duration) *Client {

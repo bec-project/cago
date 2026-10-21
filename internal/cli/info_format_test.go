@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/wakonig/cago/internal/ca"
-	"github.com/wakonig/cago/pkg/cago"
+	"github.com/bec-project/cago/internal/ca"
+	"github.com/bec-project/cago/pkg/cago"
 )
 
 func infoTimeValue(t *testing.T, input any, status, severity uint16) cago.Value {
