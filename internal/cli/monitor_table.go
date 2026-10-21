@@ -14,7 +14,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/term"
-	"github.com/wakonig/cago/pkg/cago"
+	"github.com/bec-project/cago/pkg/cago"
 )
 
 // Workers retain the latest row and optionally append history. Rendering takes a consistent snapshot,

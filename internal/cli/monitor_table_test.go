@@ -13,7 +13,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/charmbracelet/x/ansi"
-	"github.com/wakonig/cago/pkg/cago"
+	"github.com/bec-project/cago/pkg/cago"
 )
 
 func TestMonitorTableLatestValuesAndConnection(t *testing.T) {

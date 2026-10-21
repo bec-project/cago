@@ -1,6 +1,6 @@
 package cago
 
-import "github.com/wakonig/cago/internal/ca"
+import "github.com/bec-project/cago/internal/ca"
 
 // Options configures discovery, operation deadlines, array handling, and metrics.
 type Options = ca.Options

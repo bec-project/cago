@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/wakonig/cago/internal/wire"
+	"github.com/bec-project/cago/internal/wire"
 )
 
 type metricFunc func(Metric, int64)

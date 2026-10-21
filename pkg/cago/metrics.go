@@ -1,6 +1,6 @@
 package cago
 
-import "github.com/wakonig/cago/internal/ca"
+import "github.com/bec-project/cago/internal/ca"
 
 // Metric identifies a bounded client counter or gauge.
 type Metric = ca.Metric

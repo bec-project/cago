@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/wakonig/cago/internal/wire"
+	"github.com/bec-project/cago/internal/wire"
 )
 
 func TestPutGoInputsOnWire(t *testing.T) {

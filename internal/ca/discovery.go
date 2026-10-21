@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/wakonig/cago/internal/wire"
+	"github.com/bec-project/cago/internal/wire"
 )
 
 // One owned worker per TCP nameserver keeps a slow endpoint from delaying

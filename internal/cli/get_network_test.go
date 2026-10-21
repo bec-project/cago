@@ -3,7 +3,7 @@ package cli
 import (
 	"bytes"
 	"encoding/binary"
-	"github.com/wakonig/cago/internal/wire"
+	"github.com/bec-project/cago/internal/wire"
 	"math"
 	"net"
 	"strconv"

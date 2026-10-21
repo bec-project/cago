@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	"github.com/wakonig/cago/pkg/cago"
+	"github.com/bec-project/cago/pkg/cago"
 )
 
 // NewInfoCommand reports cainfo-compatible connection details by default.

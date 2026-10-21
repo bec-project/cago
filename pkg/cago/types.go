@@ -1,6 +1,6 @@
 package cago
 
-import "github.com/wakonig/cago/internal/ca"
+import "github.com/bec-project/cago/internal/ca"
 
 // DataType selects the value representation returned by a channel operation.
 type DataType = ca.DataType

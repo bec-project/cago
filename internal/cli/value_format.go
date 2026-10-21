@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wakonig/cago/pkg/cago"
+	"github.com/bec-project/cago/pkg/cago"
 )
 
 // Use EPICS numeric and escaping conventions, with quoted text and optional

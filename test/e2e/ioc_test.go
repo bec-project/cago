@@ -19,7 +19,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/wakonig/cago/pkg/cago"
+	"github.com/bec-project/cago/pkg/cago"
 )
 
 //go:embed testdata/records.db

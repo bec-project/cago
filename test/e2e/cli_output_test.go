@@ -14,7 +14,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/wakonig/cago/internal/cli"
+	"github.com/bec-project/cago/internal/cli"
 )
 
 func cliEnvironment(t *testing.T, i *ioc) {

@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/wakonig/cago/pkg/cago"
+	"github.com/bec-project/cago/pkg/cago"
 )
 
 func TestPublicClientAndChannelContract(t *testing.T) {

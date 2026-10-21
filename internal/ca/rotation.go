@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/wakonig/cago/internal/wire"
+	"github.com/bec-project/cago/internal/wire"
 )
 
 // Heartbeat Echos use zero. Each connection has only one rotation, so a tagged

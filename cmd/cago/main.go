@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/wakonig/cago/internal/cli"
+	"github.com/bec-project/cago/internal/cli"
 	"os"
 )
 

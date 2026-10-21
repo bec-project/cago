@@ -1,6 +1,6 @@
 package cago
 
-import "github.com/wakonig/cago/internal/ca"
+import "github.com/bec-project/cago/internal/ca"
 
 // Value owns immutable value data and metadata. Array and byte accessors return
 // copies. Values are constructed with NewValue or returned by channel operations.
