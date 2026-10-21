@@ -1,4 +1,4 @@
-module github.com/wakonig/cago
+module github.com/bec-project/cago
 
 go 1.27.0
 

@@ -19,7 +19,7 @@ bin/                Generated executables and local artifacts (ignored)
 ```
 
 Run source-tree commands from the repository root. Import the library as
-`github.com/wakonig/cago/pkg/cago`.
+`github.com/bec-project/cago/pkg/cago`.
 
 The public package exposes client/channel/subscription handles, values and
 metadata, configuration, groups, and metrics. Handle and value types are selected
@@ -39,7 +39,7 @@ unaligned data and handles partial vectors with scalar tails. It remains cgo-fre
 for diagnosis and controlled comparisons.
 
 ```go
-import "github.com/wakonig/cago/pkg/cago"
+import "github.com/bec-project/cago/pkg/cago"
 
 client, err := cago.New(ctx, cago.Options{})
 if err != nil { return err }
@@ -176,7 +176,7 @@ during DNS resolution.
 Install the unified CLI, then select an operation with a subcommand:
 
 ```sh
-go install github.com/wakonig/cago/cmd/cago@latest
+go install github.com/bec-project/cago/cmd/cago@latest
 cago get PV:NAME
 cago get --timeout 2s --count 10 PV:WAVEFORM
 cago put PV:SETPOINT 1.25
