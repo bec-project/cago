@@ -113,7 +113,7 @@ EPICS_CA_ADDR_LIST=127.0.0.1 EPICS_CA_AUTO_ADDR_LIST=NO cago get PV:NAME
 
 After CI succeeds on a push to `main`, semantic-release determines the next
 version from Conventional Commit messages and publishes a GitHub Release with
-release notes, six binary archives, and SHA-256 checksums. No manual tag or npm
+release notes, six binary archives, Linux RPMs for x86_64 and aarch64, and SHA-256 checksums. No manual tag or npm
 publication is needed. The first release is `v1.0.0`.
 
 - `fix: ...` creates a patch release.
@@ -124,15 +124,7 @@ publication is needed. The first release is `v1.0.0`.
 When squash merging, use a Conventional Commit PR title and preserve any
 `BREAKING CHANGE:` footer in the final commit message.
 
-Node.js 24 is only needed for release tooling (`npm ci`). With GoReleaser v2.18.0
-installed, preview the binary archives locally without publishing:
 
-```sh
-RELEASE_VERSION=0.0.0-dev goreleaser release --snapshot --clean
-```
-
-Repository rules must allow the Actions `GITHUB_TOKEN` to create `v*` tags and
-releases. Release automation uses only the token provided by GitHub Actions.
 
 ### Checks
 
