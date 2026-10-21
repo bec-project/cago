@@ -11,15 +11,15 @@ at runtime. Requires **Go 1.27 or newer**.
 ## Install
 
 Download a prebuilt CLI for Linux, macOS, or Windows (amd64 or arm64) from
-[GitHub Releases](https://github.com/wakonig/cago/releases). Extract the archive
+[GitHub Releases](https://github.com/bec-project/cago/releases). Extract the archive
 and put `cago` (`cago.exe` on Windows) on your `PATH`. SHA-256 checksums are
 provided in `checksums.txt`.
 
 To install from source:
 
 ```sh
-go get github.com/wakonig/cago/pkg/cago
-go install github.com/wakonig/cago/cmd/cago@latest
+go get github.com/bec-project/cago/pkg/cago
+go install github.com/bec-project/cago/cmd/cago@latest
 ```
 
 ## Library
@@ -34,7 +34,7 @@ import (
     "fmt"
     "log"
 
-    "github.com/wakonig/cago/pkg/cago"
+    "github.com/bec-project/cago/pkg/cago"
 )
 
 func main() {
