@@ -22,6 +22,23 @@ archives:
       - LICENSE
       - README.md
 
+nfpms:
+  - id: cago-rpm
+    ids: [cago]
+    package_name: cago
+    file_name_template: '{{ .ConventionalFileName }}'
+    homepage: https://github.com/bec-project/cago
+    maintainer: BEC Project
+    description: EPICS Channel Access command-line tools written in Go.
+    license: MIT
+    formats: [rpm]
+    bindir: /usr/bin
+    contents:
+      - src: LICENSE
+        dst: /usr/share/licenses/cago/LICENSE
+      - src: README.md
+        dst: /usr/share/doc/cago/README.md
+
 checksum:
   name_template: checksums.txt
 

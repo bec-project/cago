@@ -4,15 +4,17 @@
   "plugins": [
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
-    ["@semantic-release/exec", {
-      "prepareCmd": "RELEASE_VERSION=${nextRelease.version} goreleaser release --snapshot --clean"
-    }],
     ["@semantic-release/github", {
-      "assets": ["dist/*.tar.gz", "dist/*.zip", "dist/checksums.txt"],
+      "assets": ["dist/*.tar.gz", "dist/*.zip", "dist/*.rpm", "dist/checksums.txt"],
       "successComment": false,
       "failComment": false,
       "failTitle": false,
       "releasedLabels": false
+    }],
+    ["@semantic-release/exec", {
+      "verifyConditionsCmd": "test -n \"$GITEA_REGISTRY_TOKEN\"",
+      "prepareCmd": "RELEASE_VERSION=${nextRelease.version} goreleaser release --snapshot --clean",
+      "publishCmd": "bash scripts/upload-rpm.sh"
     }]
   ]
 }
